@@ -8,7 +8,7 @@ def test_simplifiable_1(arg):
     return True if arg else False # [simplifiable-if-expression]
 
 def test_simplifiable_2(arg):
-    # Simple test that can be replaced by not bool(arg)
+    # Simple test that can be replaced by not arg
     return False if arg else True # [simplifiable-if-expression]
 
 def test_simplifiable_3(arg):

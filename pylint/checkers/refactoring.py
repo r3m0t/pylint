@@ -486,7 +486,7 @@ class RefactoringChecker(checkers.BaseTokenChecker):
         if (node.body.value, node.orelse.value) == (True, False):
             reduced_to = "'{}'".format(test_reduced_to)
         elif (node.body.value, node.orelse.value) == (False, True):
-            reduced_to = "not '{}'".format(test_reduced_to)
+            reduced_to = "'not test'"
         else:
             return
 
