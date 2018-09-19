@@ -475,6 +475,9 @@ class RefactoringChecker(checkers.BaseTokenChecker):
         self._check_simplifiable_ifexp(node)
     
     def _check_simplifiable_ifexp(self, node):
+        if not (isinstance(node.body, astroid.Const) and
+                isinstance(node.orelse, astroid.Const)):
+            return
         if isinstance(node.test, astroid.Compare):
             test_reduced_to = 'test'
         else:
