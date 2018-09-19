@@ -472,12 +472,9 @@ class RefactoringChecker(checkers.BaseTokenChecker):
 
     @utils.check_messages("simplifiable-if-expression")
     def visit_ifexp(self, node):
-        self._check_simplifiable_ifexpr(node)
+        self._check_simplifiable_ifexp(node)
     
-    def _check_simplifiable_ifexpr(self, node):
-        left_is_true = isinstance(node.body, astroid.Const)
-        right_is_false = isinstance(node.orelse, astroid.Const)
-
+    def _check_simplifiable_ifexp(self, node):
         if isinstance(node.test, astroid.Compare):
             test_reduced_to = 'test'
         else:
