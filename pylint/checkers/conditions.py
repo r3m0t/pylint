@@ -3,50 +3,27 @@ import astroid
 from pylint.checkers import BaseChecker
 from pylint.interfaces import IAstroidChecker
 
-class UniqueReturnChecker(BaseChecker):
+class RedundantIfelseChecker(BaseChecker):
     __implements__ = IAstroidChecker
 
-    name = 'unique-returns'
+    name = 'redundant-ifelse'
     priority = -1
     msgs = {
-        'W0001': (
-            'Returns a non-unique constant.',
-            'non-unique-returns',
-            'All constants returned in a function should be unique.'
-        ),
+        'W0002': (  # XXX needs number assigned
+            'Simple if-else',
+            'redundant-ifelse',
+            'if-else expression can be simplified.'
+        )
     }
-    options = (
-        (
-            'ignore-ints',
-            {
-                'default': False, 'type': 'yn', 'metavar' : '<y_or_n>',
-                'help': 'Allow returning non-unique integers',
-            }
-        ),
-    )
-
-    def __init__(self, linter=None):
-        super(UniqueReturnChecker, self).__init__(linter)
-        self._function_stack = []
-
-    def visit_functiondef(self, node):
-        self._function_stack.append([])
-
-    def leave_functiondef(self, node):
-        self._function_stack.pop()
-
-    def visit_return(self, node):
-        if not isinstance(node.value, astroid.node_classes.Const):
-            return
-
-        for other_return in self._function_stack[-1]:
-            if (node.value.value == other_return.value.value and
-                not (self.config.ignore_ints and node.value.pytype() == int)):
-                self.add_message(
-                    'non-unique-returns', node=node,
-                )
-
-        self._function_stack[-1].append(node)
+    
+    def visit_ifexp(self, node):
+        left_is_true = isinstance(node.body, astroid.node_classes.Const) and node.body.value == True
+        right_is_false = isinstance(node.orelse, astroid.node_classes.Const) and node.orelse.value == False
+        middle_is_cond = isinstance(node.test, astroid.node_classes.Compare)
+        if left_is_true and right_is_false and middle_is_cond:
+            self.add_message(
+                'redundant-ifelse', node=node,
+            )
     
 def register(linter):
-    linter.register_checker(UniqueReturnChecker(linter))
+    linter.register_checker(RedundantIfelseChecker(linter))
