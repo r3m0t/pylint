@@ -98,7 +98,7 @@ class RefactoringChecker(checkers.BaseTokenChecker):
             "simplifiable-if-statement",
             "Used when an if statement can be replaced with " "'bool(test)'. ",
             {"old_names": [("R0102", "simplifiable-if-statement")]},
-        ),
+        ),        
         "R1704": (
             "Redefining argument with the local name %r",
             "redefined-argument-from-local",
@@ -199,6 +199,11 @@ class RefactoringChecker(checkers.BaseTokenChecker):
             "it is hard to read and can be simplified to a set comprehension."
             "Also it is faster since you don't need to create another "
             "transient list",
+        ),
+        "R1719": (
+            "The if expression can be replaced with %s",
+            "simplifiable-if-expression",
+            "Used when an if expression can be replaced with " "'bool(test)'. ",
         ),
     }
     options = (
@@ -464,6 +469,31 @@ class RefactoringChecker(checkers.BaseTokenChecker):
         self._check_nested_blocks(node)
         self._check_superfluous_else_return(node)
         self._check_consider_get(node)
+
+    @utils.check_messages("simplifiable-if-expression")
+    def visit_ifexp(self, node):
+        self._check_simplifiable_ifexpr(node)
+    
+    def _check_simplifiable_ifexpr(self, node):
+        left_is_true = isinstance(node.body, astroid.Const)
+        right_is_false = isinstance(node.orelse, astroid.Const)
+
+        if isinstance(node.test, astroid.Compare):
+            test_reduced_to = 'test'
+        else:
+            test_reduced_to = 'bool(test)'
+
+        if (node.body.value, node.orelse.value) == (True, False):
+            reduced_to = test_reduced_to
+        elif (node.body.value, node.orelse.value) == (False, True):
+            reduced_to = 'not {}'.format(test_reduced_to)
+        else:
+            return
+
+        self.add_message(
+            'simplifiable-if-expression', node=node, args=(reduced_to,)
+        )
+
 
     @utils.check_messages(
         "too-many-nested-blocks", "inconsistent-return-statements", "useless-return"

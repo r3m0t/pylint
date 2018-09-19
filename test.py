@@ -11,5 +11,7 @@ def test2():
 
 
 def test3():
-    x = True if 2==2 else False
-    y = 2 if 3==4 else True
+    should_replace = True if 2==2 else False
+    should_replace_b = True if x else False
+    should_replace_n = False if 2==2 else True
+    should_replace_nb = False if x else True
